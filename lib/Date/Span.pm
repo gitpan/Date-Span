@@ -1,6 +1,6 @@
 
 package Date::Span;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.4 $ =~ /(\d+)/g;
+our $VERSION = '1.10';
 
 use Exporter;
 our @ISA = qw(Exporter);
@@ -10,6 +10,12 @@ our @EXPORT = qw(range_expand range_durations);
 =head1 NAME
 
 Date::Span -- deal with date/time ranges than span multiple dates
+
+=head1 VERSION
+
+version 1.10
+
+ $Id: Span.pm,v 1.5 2004/08/23 12:59:22 rjbs Exp $
 
 =head1 SYNOPSIS
 

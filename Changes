@@ -1,0 +1,7 @@
+Revision history for Date::Span
+
+1.10   2004-08-23 09:00
+  - added standard tests
+  - adopt internal standards
+1.004  2004-06-30 13:33
+  - fixed some pod whitespace problems

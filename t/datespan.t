@@ -1,4 +1,6 @@
-use Test::More 'no_plan';
+use Test::More tests => 7;
+use strict;
+use warnings;
 
 use_ok('Date::Span');
 
