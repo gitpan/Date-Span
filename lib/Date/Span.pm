@@ -1,6 +1,6 @@
 
 package Date::Span;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.3 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.4 $ =~ /(\d+)/g;
 
 use Exporter;
 our @ISA = qw(Exporter);
@@ -27,20 +27,20 @@ This module provides code for dealing with datetime ranges that span multiple
 calendar days.  This is useful for computing, for example, the amount of
 seconds spent performing a task on each day.  Given the following table:
 
-	event   | begun            | ended
+  event   | begun            | ended
  ---------+------------------+------------------
-	loading | 2004-01-01 00:00 | 2004-01-01 12:45
-	venting | 2004-01-01 12:45 | 2004-01-02 21:15
-	running | 2004-01-02 21:15 | 2004-01-03 00:00
+  loading | 2004-01-01 00:00 | 2004-01-01 12:45
+  venting | 2004-01-01 12:45 | 2004-01-02 21:15
+  running | 2004-01-02 21:15 | 2004-01-03 00:00
 
 We may want to gather the following data:
 
- date       | event   | time spent
- -----------+---------+----------------
- 2004-01-01 | loading | 12.75 hours
- 2004-01-01 | venting | 11.25 hours
- 2004-01-02 | venting | 21.25 hours
- 2004-01-02 | running |  2.75 hours
+  date       | event   | time spent
+ ------------+---------+----------------
+  2004-01-01 | loading | 12.75 hours
+  2004-01-01 | venting | 11.25 hours
+  2004-01-02 | venting | 21.25 hours
+  2004-01-02 | running |  2.75 hours
 
 Date::Span takes a data like the first and produces data more like the second.
 (Details on exact interface are below.)
