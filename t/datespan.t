@@ -48,3 +48,18 @@ is_deeply(
 	\@expansion,
 	"expansion: 10000000 to 11000000"
 );
+
+is_deeply(
+	[ range_durations(10000000, 10000500) ],
+	[ [ 9936000, 500 ] ],
+	"single day duration: 10000000 to 10000500"
+);
+
+is_deeply(
+	[ range_expand(10000000, 10000500) ],
+	[ [ 10000000, 10000500 ] ],
+	"single day expansion 10000000 to 10000500"
+);
+
+is(range_expand(10000000, 9000000), undef, "can't expand backward range");
+is(range_durations(10000000, 9000000), undef, "can't expand backward range");

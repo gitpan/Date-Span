@@ -1,6 +1,6 @@
 
 package Date::Span;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.1.1.1 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.3 $ =~ /(\d+)/g;
 
 use Exporter;
 our @ISA = qw(Exporter);
@@ -27,11 +27,11 @@ This module provides code for dealing with datetime ranges that span multiple
 calendar days.  This is useful for computing, for example, the amount of
 seconds spent performing a task on each day.  Given the following table:
 
-  event   | begun            | ended
+	event   | begun            | ended
  ---------+------------------+------------------
-  loading | 2004-01-01 00:00 | 2004-01-01 12:45
-  venting | 2004-01-01 12:45 | 2004-01-02 21:15
-  running | 2004-01-02 21:15 | 2004-01-03 00:00
+	loading | 2004-01-01 00:00 | 2004-01-01 12:45
+	venting | 2004-01-01 12:45 | 2004-01-02 21:15
+	running | 2004-01-02 21:15 | 2004-01-03 00:00
 
 We may want to gather the following data:
 
@@ -64,23 +64,25 @@ the given range intersects with the date.
 =cut
 
 sub range_durations {
-  my ($start, $end) = @_;
-  my @results;
+	my ($start, $end) = @_;
+	return if $end < $start;
+	my @results;
 
-  my $start_time = $start % 86400;
-  my $start_date = $start - ($start_time);
+	my $start_date = $start - (my $start_time = $start % 86400);
+	my $end_date   =   $end - (my   $end_time =   $end % 86400);
 
-  my $end_time = $end % 86400;
-  my $end_date = $end - ($end_time);
-
-  push @results,
+	push @results,
 		[ $start_date, ( ( $end_date != $start_date ) ? ( 86400 - $start_time ) : ($end - $start) ) ];
 
-  for (my $current_date = $start_date+86400; $current_date < $end ; $current_date += 86400) {
-    push @results, [ $current_date, ( ($current_date != $end_date) ? 86400 : $end_time ) ];
-  }
+	if ($start_date+86400 < $end_date) {
+		push @results, 
+			map { [ $start_date + 86400 * $_, 86400 ] }
+			(1 .. ($end_date - $start_date - 86400) / 86400);
+	}
 
-  return @results;
+	push @results, [ $end_date, $end_time ] if $start_date != $end_date;
+
+	return @results;
 }
 
 =item C<< range_expand($start, $end) >>
@@ -93,24 +95,27 @@ the set of ranges as a whole will be identical to the passed start and end.
 =cut
 
 sub range_expand {
-  my ($start, $end) = @_;
-  my @results;
+	my ($start, $end) = @_;
+	return if $end < $start;
+	my @results;
 
-  my $start_time = $start % 86400;
-  my $start_date = $start - ($start_time);
+	my $start_date = $start - (my $start_time = $start % 86400);
+	my $end_date   =   $end - (my   $end_time =   $end % 86400);
 
-  my $end_time = $end % 86400;
-  my $end_date = $end - ($end_time);
-
-  push @results,
+	push @results,
 		[ $start, ( ( $end_date != $start_date ) ? ( $start_date + 86399 ) : $end ) ];
 
-  for (my $current_date = $start_date+86400; $current_date < $end ; $current_date += 86400) {
-    push @results, [ $current_date, ( ($current_date != $end_date) ?  $current_date+86399 : $end ) ];
-  }
+	if ($start_date+86400 < $end_date) {
+		push @results, 
+			map { [ $start_date + 86400 * $_, $start_date + 86400 * $_ + 86399 ] }
+			(1 .. ($end_date - $start_date - 86400) / 86400);
+	}
 
-  return @results;
+	push @results, [ $end_date, $end ] if $start_date != $end_date;
+
+	return @results;
 }
+
 =back
 
 =head1 TODO
