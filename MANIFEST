@@ -6,5 +6,6 @@ META.yml
 README
 t/00.load.t
 t/datespan.t
+t/from_unit.t
 t/pod-coverage.t
 t/pod.t

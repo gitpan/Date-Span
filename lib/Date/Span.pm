@@ -1,11 +1,14 @@
-
 package Date::Span;
-our $VERSION = '1.10';
+
+use strict;
+use warnings;
+
+our $VERSION = '1.12';
 
 use Exporter;
 our @ISA = qw(Exporter);
 
-our @EXPORT = qw(range_expand range_durations);
+our @EXPORT = qw(range_expand range_durations range_from_unit);
 
 =head1 NAME
 
@@ -13,9 +16,9 @@ Date::Span -- deal with date/time ranges than span multiple dates
 
 =head1 VERSION
 
-version 1.10
+version 1.12
 
- $Id: Span.pm,v 1.5 2004/08/23 12:59:22 rjbs Exp $
+ $Id: Span.pm,v 1.7 2005/01/10 19:20:32 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -51,11 +54,6 @@ We may want to gather the following data:
 Date::Span takes a data like the first and produces data more like the second.
 (Details on exact interface are below.)
 
-=cut
-
-use strict;
-use warnings;
-
 =head1 FUNCTIONS
 
 =over
@@ -69,22 +67,24 @@ the given range intersects with the date.
 
 =cut
 
+sub _date_time { my $date = $_[0] - (my $time = $_[0] % 86400); ($date, $time) }
+
 sub range_durations {
 	my ($start, $end) = @_;
 	return if $end < $start;
-	my @results;
 
-	my $start_date = $start - (my $start_time = $start % 86400);
-	my $end_date   =   $end - (my   $end_time =   $end % 86400);
+	my ($start_date, $start_time) = _date_time($start);
+	my ($end_date,   $end_time)   = _date_time($end);
 
-	push @results,
-		[ $start_date, ( ( $end_date != $start_date ) ? ( 86400 - $start_time ) : ($end - $start) ) ];
+	push my @results, [
+		$start_date,
+		(( $end_date != $start_date ) ? ( 86400 - $start_time ) : ($end - $start))
+	];
 
-	if ($start_date+86400 < $end_date) {
-		push @results, 
-			map { [ $start_date + 86400 * $_, 86400 ] }
-			(1 .. ($end_date - $start_date - 86400) / 86400);
-	}
+	push @results, 
+		map { [ $start_date + 86400 * $_, 86400 ] }
+		(1 .. ($end_date - $start_date - 86400) / 86400)
+		if ($end_date - $start_date > 86400);
 
 	push @results, [ $end_date, $end_time ] if $start_date != $end_date;
 
@@ -103,23 +103,71 @@ the set of ranges as a whole will be identical to the passed start and end.
 sub range_expand {
 	my ($start, $end) = @_;
 	return if $end < $start;
-	my @results;
 
-	my $start_date = $start - (my $start_time = $start % 86400);
-	my $end_date   =   $end - (my   $end_time =   $end % 86400);
+	my ($start_date, $start_time) = _date_time($start);
+	my ($end_date,   $end_time)   = _date_time($end);
 
-	push @results,
-		[ $start, ( ( $end_date != $start_date ) ? ( $start_date + 86399 ) : $end ) ];
+	push my @results, [
+		$start, ( ( $end_date != $start_date ) ? ( $start_date + 86399 ) : $end )
+	];
 
-	if ($start_date+86400 < $end_date) {
-		push @results, 
-			map { [ $start_date + 86400 * $_, $start_date + 86400 * $_ + 86399 ] }
-			(1 .. ($end_date - $start_date - 86400) / 86400);
-	}
+	push @results, 
+		map { [ $start_date + 86400 * $_, $start_date + 86400 * $_ + 86399 ] }
+		(1 .. ($end_date - $start_date - 86400) / 86400)
+		if ($end_date - $start_date > 86400);
 
 	push @results, [ $end_date, $end ] if $start_date != $end_date;
 
 	return @results;
+}
+
+=item C<< range_from_unit(@date_unit) >>
+
+C<@date_unit> is a specification of a unit of time, in the form:
+
+ @date_unit = ($year, $month, $day, $hour, $minute);
+
+Only C<$year> is mandatory; other arguments may be added, in order.  Month is
+given in the range (0 .. 11).  This function will return the first and last
+second of the given unit.
+
+A code reference may be passed as the last object.  It will be used to convert
+the date specification to a starting time.  If no coderef is passed, a simple
+one using Time::Local (and C<timegm>) will be used.
+
+=cut
+
+my @monthdays = ( 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
+
+sub _is_leap {
+	not($_[0] % 4) and (($_[0] % 100) or not($_[0] % 400)) and $_[0] > 0
+}
+
+sub _begin_secs {
+	require Time::Local;
+	Time::Local::timegm(0,$_[4]||0,$_[3]||0,$_[2]||1,$_[1]||0,$_[0]);
+}
+
+sub range_from_unit {
+	my $code = (ref($_[-1])||'' eq 'CODE') ? pop : \&_begin_secs;
+	return unless @_;
+	my ($year,$month,$day,$hour,$min) = @_;
+	no strict 'refs';
+	my $begin_secs = $code->(@_);
+	my $length;
+	if (defined $min) {
+		$length = 60;
+	} elsif (defined $hour) {
+		$length = 3600;
+	} elsif ($day) {
+		$length = 86400
+	} elsif (defined $month) {
+		$length  = 86400 * $monthdays[$month+0];
+		$length += 86400 if ($month == 1) and _is_leap($year)
+	} else {
+		$length = 86400 * (_is_leap($year) ? 366 : 365);
+	}
+	return ($begin_secs, $begin_secs + $length - 1);
 }
 
 =back
