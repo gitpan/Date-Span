@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Date-Span
-version:             1.122
+version:             1.123
 abstract:            ~
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32

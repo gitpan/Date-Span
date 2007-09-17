@@ -1,3 +1,4 @@
+use Date::Span;
 use Test::More;
 
 eval { require Time::Local; };
@@ -7,8 +8,6 @@ if ($@) {
 } else {
 	plan tests => 11;
 }
-
-BEGIN { use_ok("Date::Span"); }
 
 ## some boring cases
 is_deeply(
