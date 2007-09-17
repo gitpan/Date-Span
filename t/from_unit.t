@@ -1,7 +1,5 @@
 use Test::More;
 
-BEGIN { use_ok("Date::Span"); }
-
 eval { require Time::Local; };
 if ($@) {
 	plan skip_all => "default range_from_unit requires Time::Local";
@@ -9,6 +7,8 @@ if ($@) {
 } else {
 	plan tests => 11;
 }
+
+BEGIN { use_ok("Date::Span"); }
 
 ## some boring cases
 is_deeply(
