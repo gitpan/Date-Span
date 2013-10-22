@@ -3,7 +3,7 @@ use warnings;
 
 package Date::Span;
 {
-  $Date::Span::VERSION = '1.126';
+  $Date::Span::VERSION = '1.127';
 }
 # ABSTRACT: deal with date/time ranges than span multiple dates
 
@@ -113,7 +113,7 @@ Date::Span - deal with date/time ranges than span multiple dates
 
 =head1 VERSION
 
-version 1.126
+version 1.127
 
 =head1 SYNOPSIS
 
